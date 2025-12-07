@@ -10,8 +10,11 @@ const Portfolio = () => {
   const [roleIndex, setRoleIndex] = useState(0);
   const [containerSize, setContainerSize] = useState(500);
 
-  const roles = ["Backend Developer 🚀", "Cloud Engineer ☁️", "DevOps Engineer 🔧"];
-  const fullText = roles[roleIndex];
+  const roles = React.useMemo(() => [
+  "Backend Developer 🚀",
+  "Cloud Engineer ☁️",
+  "DevOps Engineer 🔧"
+], []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,44 +49,47 @@ const Portfolio = () => {
   }, []);
 
   useEffect(() => {
-    let index = 0;
-    let isDeleting = false;
-    let typingTimeout;
+  let index = 0;
+  let isDeleting = false;
+  let typingTimeout;
 
-    const type = () => {
-      const current = roles[roleIndex];
-      
-      if (!isDeleting && index <= current.length) {
-        setTypedText(current.slice(0, index));
-        index++;
-        typingTimeout = setTimeout(type, 100);
-      } else if (!isDeleting && index > current.length) {
-        // Pause at the end before deleting
-        typingTimeout = setTimeout(() => {
-          isDeleting = true;
-          type();
-        }, 2000);
-      } else if (isDeleting && index > 0) {
-        setTypedText(current.slice(0, index));
-        index--;
-        typingTimeout = setTimeout(type, 50);
-      } else if (isDeleting && index === 0) {
-        isDeleting = false;
-        setRoleIndex((prev) => (prev + 1) % roles.length);
-      }
-    };
+  const type = () => {
+    const current = roles[roleIndex];
 
-    type();
+    if (!isDeleting && index <= current.length) {
+      setTypedText(current.slice(0, index));
+      index++;
+      typingTimeout = setTimeout(type, 100);
 
-    const cursorInterval = setInterval(() => {
-      setCursorVisible(prev => !prev);
-    }, 500);
+    } else if (!isDeleting && index > current.length) {
+      typingTimeout = setTimeout(() => {
+        isDeleting = true;
+        type();
+      }, 2000);
 
-    return () => {
-      clearTimeout(typingTimeout);
-      clearInterval(cursorInterval);
-    };
-  }, [roleIndex]);
+    } else if (isDeleting && index > 0) {
+      setTypedText(current.slice(0, index));
+      index--;
+      typingTimeout = setTimeout(type, 50);
+
+    } else if (isDeleting && index === 0) {
+      isDeleting = false;
+      setRoleIndex(prev => (prev + 1) % roles.length);
+    }
+  };
+
+  type();
+
+  const cursorInterval = setInterval(() => {
+    setCursorVisible(prev => !prev);
+  }, 500);
+
+  return () => {
+    clearTimeout(typingTimeout);
+    clearInterval(cursorInterval);
+  };
+}, [roleIndex, roles]);
+
 
   const scrollToSection = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
